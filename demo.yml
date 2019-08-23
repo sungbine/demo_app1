@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sb-demo-config
+  namespace: default
+data:
+  NEW_FEATURE: "true"
+
+---
+apiVersion: apps/v1beta2
+kind: Deployment
+metadata:
+  name: sb-demo
+  namespace: default
+  labels:
+    source: demo
+    stack: frontend
+    app: sb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      source: demo
+      app: sb
+  template:
+    metadata:
+      labels:
+        source: demo
+        app: sb
+    spec:
+      containers:
+      - name: primary
+        image: docker.iflat.nhn.com/nginx
+        ports:
+        - containerPort: 8080
+        readinessProbe:
+          httpGet:
+            path: /
+            port: 8080
+        envFrom:
+        - configMapRef:
+            name: sb-demo-config
+
+--- 
+kind: Service
+apiVersion: v1
+metadata:
+  name: sb-demo
+  namespace: default
+spec:
+  selector:
+    source: demo
+    app: sb
+  ports:
+  - protocol: TCP
+    port: 80
+    targetPort: 8080
