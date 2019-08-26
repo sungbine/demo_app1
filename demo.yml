@@ -40,6 +40,8 @@ spec:
         envFrom:
         - configMapRef:
             name: sb-demo-config
+      imagePullSecrets:
+      - name: regcred
 
 --- 
 kind: Service
